@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+    
+    /* 
+        layout  
+    */
+    div.whole{
+        width: 1800px;
+    }
+    
+    hr{
+        border: 1px solid #000;
+    }
+    div.left1 {
+        color: #006;
+        float: left;
+        width: 890px;
+        border: 1px solid #000;
+        word-wrap: break-word;
+    }
+    div.right1 {
+        color: #600;
+        float: right;
+        width: 890px;
+        border: 1px solid #000;
+        word-wrap: break-word;
+    }
+    div.mymargin{
+        margin: 10px 10px 10px;
+    }
+    
+    /* State Graph */
+    .statenode {
+        stroke-opacity: .7;
+        fill-opacity: .7;
+        stroke-width: 3;
+    }
+    /*
+        Arrow colors
+    #000062;
+    */
+    marker#start {
+        fill: green;
+    }
+    marker#end {
+        fill: #680000;
+    }
+    marker#mid {
+        fill: #5E4E00;
+    }
+    /*
+    The part of the graph that consist of crowd behavior. Defined as a class
+    */
+    marker {
+        stroke-opacity: .4;
+        fill-opacity: .4;
+    }
+    /*
+    The part of the graph that consist of a selected path.
+    */
+    
+    .start {
+        stroke: #000062;
+        fill: #1962FF;
+    }
+    text.start{
+        fill: #000062;
+        stroke:none;
+    }
+    .mid {
+        stroke: #5E4E00;
+        fill: #F5FFA3;
+    }
+    .bonus {
+        stroke: green;
+    }
+    .end {
+        stroke: #680000;
+        fill: black;
+    }
+    text.end{
+        fill: black;
+        stroke:none;
+    }
+    
+    .statelink{
+        stroke-opacity: .7;
+/*        fill-opacity: 0;*/
+        fill: transparent;
+    }
+    /* selected placed here will overshadow start, mid and end */
+    .selected {
+        stroke: #FF0509;
+        stroke-opacity: 1;
+    }
+    
+    /* Behavior graph */
+    
+    .behaviornode,
+    .behaviorlink {
+        stroke-opacity: .8;
+        fill-opacity: .8;
+        stroke-width: 3;
+        stroke: #FFFAC9;
+    }
+    
+    .negative{
+        fill: #88F37F;
+        stroke:green;
+    }
+    text.negative{
+        fill: green;
+        stroke:none;
+    }
+    
+    .positive{
+        fill: #FF77DF;
+        stroke: purple;
+    }
+    text.positive{
+        fill: purple;
+        stroke:none;
+    }
+    
+    .neutral{
+        fill: yellow;
+        stroke: #5E4E00;
+    }
+    text.neutral{
+        fill: #5E4E00;
+        stroke:none;
+    }
+    
+    div.popup {
+      position: absolute;
+      border: 1px solid #bbbbbb;
+      color: #444444;
+      background-color: white;
+      padding: 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 16px;
+/*      pointer-events: none;*/
+    }
+    div.popup table{
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+    }
+    div.popup hr{
+      margin: 5px 0px;
+      border: none;
+      height: 1px;
+      color: #cccccc;
+      background-color: #cccccc;
+    }
+    div.popup p.services{
+      font-size: 11px;
+      line-height: 17px;
+      padding: 0px;
+      margin: 0px;
+    }
+    .hover_image {position:relative;}
+    .hover_image span{position:absolute; display:none; z-index:99;}
+    .hover_image:hover span{display:block;}
+    
+    text {
+        font-family: sans-serif;
+/*      font: "Helvetica Neue", Helvetica, Arial, sans-serif;*/
+/*      text-anchor: middle;*/
+        pointer-events: none;
+        stroke:none;
+        font-weight: bold;
+    }
+</style>
+
+<body>
+    <!-- Load the latest release. If that does not work, load our own script -->
+    
+    <div class="whole">
+        
+        <h1>Glyph: Interactive Visualization for Understanding of Attention Patterns</h1>
+        An experimental interactive visualization system designed for the purpose of discovering attention patterns from recorded
+        eye-tracking data.
+        <ul>
+        <li>Truong-Huy D. Nguyen: [first name without hyphen] AT gmail.com </li>
+            
+        <li>Magy Seif El-Nasr: [first name] AT neu.edu </li>
+            
+        <li>Derek Isaacowitz: [first name's initial].[last name] AT neu.edu </li>
+        </ul>
+        
+        <hr/>
+    <div class="mymargin" >
+        
+        Select the group to visualize (e.g. Happy or No)
+        <span id="level"></span>
+<!--        <input type="text" id="level" onchange="updateLevel()">-->
+<!--
+        <input type="text" id="level">
+        <input type="button" id="setLevel" value="Set Level" onclick="updateLevel()" />
+-->
+        
+        Increase/decrease graph opacity 
+        
+        <input type="button" id="incrementOpacity" value="++" onclick="incrementOpacity()" />
+        <input type="button" id="decrementOpacity" value="--" onclick="decrementOpacity()" />
+        Freeze graph layout <input type="button" id="freezeLayout" value="Freeze/Unfreeze" onclick="freezeLayout()" />
+        Fix all nodes' positions <input type="button" id="fixLayout" value="Fix/Unfix" onclick="fixLayout()" />
+    </div>
+    
+        
+        
+        
+    <div class="left1" id="state-graph-div">
+        <div class="mymargin">
+<!--
+            <b>Graph Controls - </b>
+            
+             Increase/decrease graph size 
+        
+        <input type="button" id="incrementGraph" value="++" onclick="incrementGraph(0)" />
+        <input type="button" id="decrementGraph" value="--" onclick="decrementGraph(0)" />
+            Unfix/Fix all nodes 
+        <input type="button" value="Unfix" onclick="unfixAllNodes(0)" />
+        <input type="button" value="Fix" onclick="fixAllNodes(0)" />
+            <hr/>
+-->
+            Enter user IDs (e.g. OA121,MA133) <input type="text" id="userID">
+            <input type="button" id="highlightUserID" value="Highlight" onclick="highlightUserID()" /> 
+            <input type="button" value="Young Adults" onclick="highlightGroup(1)" /> 
+            <input type="button" value="Middle-aged" onclick="highlightGroup(3)" /> 
+            <input type="button" value="Old Adults" onclick="highlightGroup(2)" /> 
+            <input type="button" value="All" onclick="highlightGroup(0)" /> 
+            <input type="button" value="Node size = Popularity" onclick="changeStateNodeSizeType(1)" /> 
+            <input type="button" value="Node size = Look significant" onclick="changeStateNodeSizeType(2)" /> 
+            
+
+            
+<!--            <input type="button" id="toggleNodeLayout" value="Toggle node layout" onclick="toggleNodeLayout()" />-->
+<!--
+            Color-code links? (Red: Collect key, Green: Collect bonus) <input type="checkbox" name="color-code" onchange="updateColor()"/>
+            
+-->
+            <br/>
+            Enter K
+            <input type="text" id="number-highlight">
+            <input type="button" id="toggleFrequentTrajectories" value="Highlight K most frequent" onclick="toggleHighlightFreqTrajectories()" />
+            <input type="button" id="toggleKthTrajectories" value="Highlight K-th most frequent" onclick="toggleKthTrajectories()" />
+            <input type="button" id="clearHighlight" value="Clear all highlights" onclick="clearHighlight()" /><br/>
+            <hr/>
+
+                <b>
+                    Video Info
+<!--
+                    <a href="#" class="hover_image"> Level Info 
+                    <span id="level-screenshot"><img src="level0_10.jpg" /></span>
+                    </a>
+-->
+<!--                    <a href="#">Level Info<img src="level0_10.png" /></a>-->
+            
+            </b> -
+            <label id="level-id"></label>.
+            <br/>
+            Number of state nodes: <b><label id="num-statenodes"></label></b> ,
+            Number of participants: <b><label id="num-players"></label></b> <br/>
+            <hr/>
+            <b>State Node Info</b> (updated when node selected)<br/>
+            Player IDs visiting this node (<label id="num-players-state"></label> players): <label id="players-state"></label><br/>
+            <b>Action Link Info</b> (updated when link selected)<br/>
+            Player IDs traversing this link (<label id="num-players-statelink"></label> players): <label id="players-statelink"></label><br/>
+        </div>
+    </div>
+        
+        
+        
+    <div class="right1" id="behavior-graph-div">
+        <div class="mymargin">
+        
+        Enter sequence index to highlight
+        <input type="text" id="playtrace-index">
+        <input type="button" id="highlightNodeID" value="Highlight" onclick="highlightNodeID()" />
+        <input type="button" value="Clear all highlights" onclick="clearHighlight()" />
+        Toggle showing links <input type="button" id="toggleShowLinks" value="Show/Hide" onclick="toggleShowLinks()" />
+        <br/>
+        Enter sequence index to show info
+        <input type="text" id="playtrace-show-info">
+        <input type="button" value="Show" onclick="showInfoNodeID()" />
+        
+            <hr/>
+        <b>Level Info</b> -
+            
+        Total number of sequences (nodes): <b><label id="num-nodes"></label></b> 
+<!--
+        with <label id="num-complete"></label> <span style="color:green"><b>complete (green nodes)</b></span>, and
+        <label id="num-incomplete"></label> <span style="color:pink"><b>incomplete (pink nodes)</b></span><br/>  
+-->
+<!--        Number of Players <label id="num-players"></label> <br/><br/>-->
+        <hr/>
+        
+        <b>Sequence Node Info</b> (updated when node selected) - ID = <label id="selected-node-index"></label> <br/>
+        Player IDs having this pattern (<label id="num-players-sequence"></label> players): <label id="players-sequence"></label><br/>
+        Complete sequence (<label id="num-states-in-trajectory"></label> states): <span style="color:red"><b><label id="infobox"></label></b></span><br/>
+<!--
+            
+        Details: <span style="color:blue"><b><label id="infobox-details"></label></b></span>
+-->
+        </div>
+        
+        
+    </div>
+    </div>
+    
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script>
+        window.d3 || document.write('<script src="libs/d3.min.js">\x3C/script>')
+    </script>
+    <script src="libs/underscore-min.js"></script>
+
+
+    <script>
+        
+        var fill = d3.scale.category10();
+//        var fill = d3.scale.ordinal().domain(d3.range(10)).range(["#d62728", "#d62728"]);
+//        var level = "Happy";
+         // my graph data
+        var data;
+        
+        var minNodeSize = 5,
+            maxNodeSize = 30,
+            padding = 1.5,
+            svgX = 0,
+            svgY = 200;
+        
+        var displayingFreq = false;
+        
+        var width = 883;
+        var div, svg;
+        
+        var userIDLengthLimit = 10;
+        
+        //---------------------
+        var dd =[
+            "Happy",
+            "No"
+                ];
+        
+        var selectUI = d3.select("#level").append("select").attr("id", "drop-down").on("change", updateLevel);
+        var options = selectUI.selectAll('option').data(dd); // Data join
+         // Enter selection
+        options.enter()
+            .append("option")
+            .text(function (d) {
+                return d;
+            });
+        selectUI.property("value", dd[0]);
+
+
+        var prevStroke, prevFill, prevFillOpa, prevStrokeOpa, prevTextFill;
+        
+        /******************** State graph **********************************/
+
+        var stateheight = 810;
+        var stateforce = d3.layout.force()
+            .gravity(0)
+            .charge(-700)
+            .linkDistance(200)
+            .linkStrength(0)
+            .size([width, stateheight])
+            .on("tick", statetick);
+
+//        div = d3.select("body").append("div").attr("class", "left1");
+        div = d3.select("#state-graph-div").append("div");//.attr("class", "left1");
+        
+        svg = div.append("svg")
+            .attr("width", width)
+            .attr("height", stateheight)
+//            .attr("x", svgX)
+            //.attr("y", svgY)
+            .style("border", "4px solid #000")
+            .attr("pointer-events", "all")
+            .call(d3.behavior.zoom().on("zoom", stateZoomPan));
+
+
+         // the graph components (nodes and links)
+        var stateSvgContainer = svg.append("g").attr("id", "stategraph_container");
+        
+
+        var statelink = stateSvgContainer.append("g").attr("id", "statelink_container").selectAll(".statelink"),
+            statenode = stateSvgContainer.append("g").attr("id", "statenode_container").selectAll(".statenode");
+
+         // Define markers
+         // Per-type markers, as they don't inherit styles.
+        svg.append("defs").selectAll("marker")
+            .data(["start", "mid", "end"])
+            .enter().append("marker")
+            .attr("id", function (d) {
+                return d;
+            })
+         // the region viewable in this marker
+        .attr("viewBox", "0 -5 10 10")
+            .attr("refX", 15)
+            .attr("refY", 0)
+            .attr("markerWidth", 30)//1.5)
+            .attr("markerHeight", 30)//1.5)
+            .attr("markerUnits", "userSpaceOnUse")
+
+            .attr("orient", "auto")
+            .append("path")
+            .attr("d", "M0,-5L10,0L0,5");
+
+         // for sticky drag
+        var statedrag = stateforce.drag().on("dragstart", dragstart);
+
+        /********************* Behavior graph ******************************/
+        
+        
+        var behaviorheight = 810;
+
+        var minDistance = 10,
+            maxDistance = 1000;
+        
+        var behaviorforce = d3.layout.force()
+            .charge(-100)
+            .linkDistance(distanceMapping)
+            .size([width, behaviorheight])
+            .on("tick", behaviortick);
+
+//        div = d3.select("body").append("div").attr("class", "right1");
+        div = d3.select("#behavior-graph-div").append("div");//.attr("class", "left1");
+        
+        svg = div.append("svg")
+            .attr("width", width)
+            .attr("height", behaviorheight)
+//            .attr("x", svgX)
+//            .attr("y", svgY)
+            .style("border", "4px solid #000")
+            .attr("pointer-events", "all")
+            .call(d3.behavior.zoom().on("zoom", behaviorZoomPan));
+
+
+         // the graph components (nodes and links)
+        var behaviorSvgContainer = svg.append("g").attr("id", "graph_container");
+
+        var behaviorlink = behaviorSvgContainer.append("g").attr("id", "link_container").selectAll(".behaviorlink"),
+            behaviornode = behaviorSvgContainer.append("g").attr("id", "node_container").selectAll(".behaviornode");
+
+
+         // for sticky drag
+        var behaviordrag = behaviorforce.drag()
+            .on("dragstart", behaviorDragstart);
+        
+        /****************** Load level *******************************/
+        
+         // graph stores the loaded data
+        d3.json(getCurrentFilename(), updateJSON);
+
+
+         //--------------- Functions ------------
+        function updateJSON(error, json) {
+
+            if (error) {
+                alert("Level does not exist!");
+                return console.warn(error);
+            }
+            data = json;
+            
+            
+            // update info on num statenodes and players
+            d3.select("#level-id").text(data.level_info);
+            d3.select("#num-statenodes").text(data.nodes.length);
+//            d3.selectAll("#num-keys").text(data.level_info.keys.length);
+//            d3.selectAll("#num-bonuses").text(data.level_info.bonuses.length);
+//            d3.select("#num-cogs").text(data.level_info.gears.length);
+//            d3.selectAll("#keys-info").text(data.level_info.keys);
+//            d3.selectAll("#bonus-info").text(bonusArrayToString(data.level_info.bonuses));
+//            d3.select("#cogs-info").text(data.level_info.gears);
+//            
+//            d3.select("#level-screenshot").select("img").attr("src", "level"+level+".jpg");
+ 			// construct node map
+            var nodeMap = {};
+            data.nodes.forEach(function (x) {
+                nodeMap[x.id] = x;
+                x.user_ids = _.uniq(x.user_ids);
+            });
+            data.links.forEach(function (x) {
+                x.source = nodeMap[x.source];
+                x.target = nodeMap[x.target];
+                x.user_ids = _.uniq(x.user_ids);
+            });
+            
+            visualizeStateData();
+            
+            // update info on num nodes and players
+            d3.select("#num-nodes").text(data.trajectories.length);
+            d3.selectAll("#num-players").text(data.num_users);
+//            d3.select("#num-complete").text(data.num_complete);
+//            d3.select("#num-incomplete").text(data.trajectories.length-data.num_complete);
+            
+            visualizeBehaviorData();
+            showLinks = true;
+            toggleShowLinks();
+        }
+        
+
+        function getCurrentFilename() {
+            return "data/" + d3.select("#drop-down").node().value + "_Instruct.json";
+        }
+
+
+        function updateLevel() {
+            clearHighlight();
+            d3.json(getCurrentFilename(), updateJSON);
+        }
+
+        /******************** State graph **********************************/
+        var linearStateNodeScale, linearStateLinkScale;
+
+//        var presetNodes = false;
+        var gravityFocus = {'NEGATIVE': 2, 'NEUTRAL': 1, 'POSITIVE': 0};
+        
+        var foci = [{x: 400, y: 100}, {x: 100, y: 600}, {x: 700, y: 600}];
+        
+        var presetStateNodes = function(nodes){
+            
+            margin = 100;
+            maxX = 890;
+            
+            nodeSpacing = (maxX - 2*margin)/8;
+            yNodeSpacing = 200;
+            
+            // Prefix positions of start and end nodes------
+            nodes[0].fixed = true;
+            nodes[0].x = -200; //margin;
+            nodes[0].y = stateheight/2;
+            
+            nodes[nodes.length-1].fixed = true;
+            nodes[nodes.length-1].x = maxX+200; //maxX-margin;
+            nodes[nodes.length-1].y = stateheight/2;
+            
+            // the rest of the nodes
+            
+            i=1;
+            for(var affect=0; affect<3; affect++){
+                
+                for (var duration=1;duration<=3; duration++){
+                    for (var size= 0; size < 3; size++){
+//                        if (presetNodes) nodes[i].fixed = true;
+//                        else 
+                        nodes[i].y = margin + affect* gravityFocus[nodes[i].details.affect]; // yNodeSpacing;
+                        nodes[i].x = maxX/2; //margin + ((duration-1)*3 + size)*nodeSpacing;
+                        i++;
+                    }
+                }
+            }
+            
+        };
+        
+        var getStateNodeFontsize = function(d){
+//                        return linearStateNodeScale(d.user_ids.length);
+//                if (d.details.type == 'mid')    
+//                    return linearStateNodeScale(getLookSignificance(d));
+                return maxNodeSize;
+        };
+        
+        function visualizeStateData() {
+            linearStateNodeScale = getStateNodeScale(data.nodes);
+            linearStateLinkScale = getStateLinkScale(data.links);
+            
+            // Prefix positions of start and end nodes------
+            presetStateNodes(data.nodes);
+            //---------------------------------------------
+            
+            stateforce.nodes(data.nodes)
+            .links(data.links);
+
+            statelink = statelink.data(data.links);
+            statenode = statenode.data(data.nodes);
+
+            // UPDATE --------------------
+            statelink.attr("id", function (d, i) {
+                return 'statelink' + d.id;
+            })
+            .attr("class", updateLinkClass)
+            .style("stroke-width", getStrokeWidth)
+                .attr("marker-end", function (d) {
+                    
+//                    return "url(#" + d.type + ")";
+                return "url(#mid)";
+                
+                });
+            statelink.select("title").text(function (d) {
+//                return d.user_ids;
+                return d.user_ids;
+//                return d.action_int;
+            });
+
+            statenode.attr("id", function (d, i) {
+                return 'statenode' + d.id;
+            })
+                .attr("class", function (d) {
+                    if (d.details.type == 'start' || d.details.type == 'end')
+                        return "statenode " + d.details.type;
+                    return "statenode " + d.details.affect.toLowerCase();
+                })
+            .select("circle")
+            .attr("class", function (d) {
+                    if (d.details.type == 'start' || d.details.type == 'end')
+                        return d.details.type;
+                    return d.details.affect.toLowerCase();
+                })
+                .attr("r", function (d) {
+                    return linearStateNodeScale(d.user_ids.length);
+//                if (d.details.type == 'mid')    
+//                    return linearStateNodeScale(getLookSignificance(d));
+//                return maxNodeSize;
+                });
+
+            statenode.select("text")
+                .attr("class", function (d) {
+                    if (d.details.type == 'start' || d.details.type == 'end')
+                        return d.details.type;
+                    return d.details.affect.toLowerCase();
+                })
+            .attr("dx", function(d){
+                        return linearStateNodeScale(d.user_ids.length);
+                    })
+                .attr("font-size", getStateNodeFontsize)
+            .text(function(d,i) { 
+                if (d.details.type == 'start' || d.details.type == 'end')
+                    return d.details.type;
+//                return "";
+//                
+                return (d.details.affect + ", " + d.details.size + ", " + getDurationStr(d.details.duration)).toLowerCase();
+                                });
+            
+            statenode.select("title").text(function (d) {
+//                return d.user_ids;
+                if (d.details.type == 'start' || d.details.type == 'end')
+                    return d.details.type;
+                return (d.details.affect + ", " + d.details.size + ", " + getDurationStr(d.details.duration)).toLowerCase();
+            });
+
+
+            // ENTER ----------------
+            var statelinkGroup = statelink.enter().append("path") //.append("line")
+                .attr("class", updateLinkClass)
+                .attr("id", function (d, i) {
+                    return 'statelink' + d.id;
+                })
+                //                .style("stroke", getLineColor)
+                .style("stroke-width", getStrokeWidth)
+                .attr("marker-end", function (d) {
+//                    return "url(#" + d.type + ")";
+                return "url(#mid)";
+                })
+            .on("click", stateLinkClicked);
+            
+            statelinkGroup.append("title").text(function (d) {
+                return d.user_ids;
+                
+//                return d.meaning;
+//                return d.action_int;
+            });
+
+            statelink.exit().remove();
+
+            var statenodeGroup = statenode.enter().append("g")
+                .attr("class", function (d) {
+                    if (d.details.type == 'start' || d.details.type == 'end')
+                        return "statenode " + d.details.type;
+                    return "statenode " + d.details.affect.toLowerCase();
+                })
+                .attr("id", function (d, i) {
+                    return 'statenode' + d.id;
+                })
+                .on("dblclick", dblclick)
+                .call(statedrag);
+            
+                
+
+            statenodeGroup.append("title").text(function (d) {
+//                return d.user_ids;
+//                return d.id;
+                if (d.details.type == 'start' || d.details.type == 'end')
+                    return d.details.type;
+                return (d.details.affect + ", " + d.details.size + ", " + getDurationStr(d.details.duration)).toLowerCase();
+            });
+            
+            statenodeGroup.append("circle")
+                .attr("r", function (d) {
+                    return linearStateNodeScale(d.user_ids.length);
+//                if (d.details.type == 'mid')    
+//                    return linearStateNodeScale(getLookSignificance(d));
+//                return maxNodeSize;
+                
+                });
+            statenodeGroup.append("text")
+                  .attr("dx", function(d){
+                        return linearStateNodeScale(d.user_ids.length);
+                    })
+                  .attr("dy", ".35em")
+                .attr("class", function (d) {
+                    if (d.details.type == 'start' || d.details.type == 'end')
+                        return d.details.type;
+                    return d.details.affect.toLowerCase();
+                })
+                .attr("font-size", getStateNodeFontsize)
+                  .text(function(d,i) { 
+                
+                        if (d.details.type == 'start' || d.details.type == 'end')
+                            return d.details.type;
+//                        return "";
+                        return (d.details.affect + ", " + d.details.size + ", " + getDurationStr(d.details.duration)).toLowerCase();
+                    });
+
+            statenode.exit().remove();
+
+            stateforce.start();
+
+        }
+        
+        // flag: 1 - popularity, 2 - look significant
+        // can create function instead of copying codes
+        var changeStateNodeSizeType = function(flag){
+            switch (flag){
+                    
+                case 1:
+                    statenode
+                        .select("circle")
+                        .attr("r", function (d) {
+                                            return linearStateNodeScale(d.user_ids.length);
+                    });
+                    statenode.select("text")
+                        .attr("font-size", function(d){
+//                                                return linearStateNodeScale(d.user_ids.length);
+                                return maxNodeSize;
+                    })
+                    break;
+
+                case 2:
+                    statenode
+                        .select("circle")
+                        .attr("r", function (d) {
+                                                if (d.details.type == 'mid')    
+                                                    return linearStateNodeScale(getLookSignificance(d));
+                                                return maxNodeSize;
+                    });
+                    statenode.select("text")
+                        .attr("font-size", function(d){
+//                                                if (d.details.type == 'mid')    
+//                                                    return linearStateNodeScale(getLookSignificance(d));
+                                                return maxNodeSize;
+                    })
+                    break;
+            }
+        };
+        
+        
+        
+        var lookzoneSize = {'SMALL': 3, 'MEDIUM': 2, 'LARGE': 1};
+        var getLookSignificance = function(d){
+            return d.details.duration * lookzoneSize[d.details.size];
+        };
+        
+        var getDurationStr = function(d){
+            switch(d){
+                case 1: return 'short';
+                case 2: return 'medium';
+            }
+            return 'long';
+        }
+
+        function statetick(e) {
+            // statelink 
+//            statelink.attr("x1", function (d) {
+//                return d.source.x;
+//            })
+//                .attr("y1", function (d) {
+//                    return d.source.y;
+//                })
+//                .attr("x2", function (d) {
+//                    return d.target.x;
+//                })
+//                .attr("y2", function (d) {
+//                    return d.target.y;
+//                });
+            
+            statelink.attr("d", function(d) {
+              var x1 = d.source.x,
+                  y1 = d.source.y,
+                  x2 = d.target.x,
+                  y2 = d.target.y,
+                  dx = x2 - x1,
+                  dy = y2 - y1,
+                  dr = Math.sqrt(dx * dx + dy * dy),
+
+                  // Defaults for normal edge.
+                  drx = dr,
+                  dry = dr,
+                  xRotation = 0, // degrees
+                  largeArc = 0, // 1 or 0
+                  sweep = 1; // 1 or 0
+
+                  // Self edge.
+                  if ( x1 === x2 && y1 === y2 ) {
+                    // Fiddle with this angle to get loop oriented.
+                    xRotation = -45;
+
+                    // Needs to be 1.
+                    largeArc = 1;
+
+                    // Change sweep to change orientation of loop. 
+                    //sweep = 0;
+
+                    // Make drx and dry different to get an ellipse
+                    // instead of a circle.
+                    drx = 30;
+                    dry = 20;
+
+                    // For whatever reason the arc collapses to a point if the beginning
+                    // and ending points of the arc are the same, so kludge it.
+                    x2 = x2 + 1;
+                    y2 = y2 + 1;
+                  } 
+
+             return "M" + x1 + "," + y1 + "A" + drx + "," + dry + " " + xRotation + "," + largeArc + "," + sweep + " " + x2 + "," + y2;
+            });
+            
+            statenode
+                .each(gravity(.2 * e.alpha))
+                .each(collide(.5))
+                .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")";})
+//                .attr("cx", function (d) {
+//                    return d.x;
+//                })
+//                .attr("cy", function (d) {
+//                    return d.y;
+//                })
+//                .each(function(d){console.log("d.cy = " + d.cy)});
+        }
+        
+                       
+        // Move nodes toward cluster focus.
+        function gravity(alpha) {
+          return function(d) {
+              if (d.details.type == 'mid'){
+                d.y += (foci[gravityFocus[d.details.affect]].y - d.y) * alpha;
+                d.x += (foci[gravityFocus[d.details.affect]].x - d.x) * alpha;
+              }
+          };
+        }
+
+        function getStrokeWidth(d) {
+//            return Math.sqrt(d.weight);
+            return linearStateLinkScale(d.user_ids.length);
+//            return d.user_ids.length;
+        }
+        function updateLinkClass(d) {
+            return 'statelink mid';
+//            var meaning = getLinkTypeFromMeaning(d.meaning);
+//            if (meaning == 'start')
+//                return "statelink bonus";
+//            return "statelink " + meaning;
+        }
+        
+        //
+        function getLinkTypeFromMeaning(meaning){
+            
+            // collect key
+//            if (meaning.indexOf('k') != -1)
+//                return "end";
+//            if (meaning.indexOf('b') != -1)
+//                return "start";
+//            
+            return "mid";
+            
+        }
+
+         // set minVisits and maxVisits
+//        function getStateNodeScale(dataset) {
+//            var minVisits = d3.min(dataset, function (d) {
+//                return d.user_ids.length;
+//            });
+//            var maxVisits = d3.max(dataset, function (d) {
+//                return d.user_ids.length;
+//            });
+//
+//            return d3.scale.linear()
+//                .domain([minVisits, maxVisits])
+//                .range([minNodeSize, maxNodeSize]);
+//        }
+//        
+        function getStateNodeScale(dataset) {
+            var minVisits = d3.min(dataset, function (d) {
+                return getLookSignificance(d);
+            });
+            var maxVisits = d3.max(dataset, function (d) {
+                return getLookSignificance(d);
+            });
+
+            return d3.scale.linear()
+                .domain([minVisits, maxVisits])
+                .range([minNodeSize, maxNodeSize]);
+        }
+        
+        function getStateLinkScale(dataset) {
+            var minVisits = d3.min(dataset, function (d) {
+                return d.user_ids.length;
+            });
+            var maxVisits = d3.max(dataset, function (d) {
+                return d.user_ids.length;
+            });
+
+            return d3.scale.linear()
+                .domain([minVisits, maxVisits])
+                .range([minNodeSize, maxNodeSize]);
+        }
+
+         // collision detection
+         // Resolves collisions between d and all other circles.
+        function collide(alpha) {
+            var quadtree = d3.geom.quadtree(data.nodes);
+            return function (d) {
+                // the radius of the current node
+                var d_radius = linearStateNodeScale(d.user_ids.length);
+
+
+                var r = d_radius + maxNodeSize + padding,
+                    nx1 = d.x - r,
+                    nx2 = d.x + r,
+                    ny1 = d.y - r,
+                    ny2 = d.y + r;
+
+                quadtree.visit(function (quad, x1, y1, x2, y2) {
+                    if (quad.point && (quad.point !== d)) {
+                        var x = d.x - quad.point.x,
+                            y = d.y - quad.point.y,
+                            l = Math.sqrt(x * x + y * y),
+                            r = d_radius + linearStateNodeScale(quad.point.user_ids.length) + padding;
+                        if (l < r) {
+                            l = (l - r) / l * alpha; // padding
+                            d.x -= x *= l;
+                            d.y -= y *= l;
+                            quad.point.x += x;
+                            quad.point.y += y;
+                        }
+                    }
+                    return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+                });
+            };
+        }
+
+
+        function stateZoomPan() {
+            stateSvgContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        }
+        function behaviorZoomPan() {
+            behaviorSvgContainer.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+        }
+
+         // for sticky drag
+         // This callback can access this (the DOM object it is called upon)
+        function dblclick(d) {
+            // somehow this works, but 
+            // d3.event.sourceEvent.stopPropagation(); does not
+
+            d3.event.stopPropagation();
+            d3.select(this).classed("fixed", d.fixed = false);
+        }
+
+        function dragstart(d) {
+            d3.event.sourceEvent.stopPropagation();
+            d3.select(this).classed("fixed", d.fixed = true);
+            
+            // show state node info
+            stateDisplayInfo(d);
+        }
+ 
+        // display info in textboxes
+        function stateDisplayInfo(d){
+            
+            d3.select("#statenode-id").text(d.id);
+//            d3.select("#curr-position").text(d.details.position);
+//            d3.select("#num-keys-collected").text(getNumTrue(d.details.keys));
+//            d3.select("#num-bonuses-collected").text(getNumTrue(d.details.items));
+            
+            d3.select("#num-players-state").text(d.user_ids.length);
+            if (d.user_ids.length <= userIDLengthLimit)
+                d3.select("#players-state").text(d.user_ids);
+            else d3.select("#players-state").text(d.user_ids.slice(0,userIDLengthLimit) + ",....");
+        }
+        
+        // display link info in textboxes
+        function stateLinkClicked(d){
+            
+//            d3.select("#statelink-act").text(d.num_moves);
+//            d3.select("#statelink-meaning").text(d.meaning);
+            
+            d3.select("#num-players-statelink").text(d.user_ids.length);
+            if (d.user_ids.length <= userIDLengthLimit)
+                d3.select("#players-statelink").text(d.user_ids);
+            else d3.select("#players-statelink").text(d.user_ids.slice(0,userIDLengthLimit) + ",....");
+            
+            
+//            <b>Action Link Info</b> (updated when link selected) - Position displacement: <label id="statelink-act"></label>,
+//            effect: <label id="statelink-meaning"></label> <br/>
+//            Player IDs traversing this link (<label id="num-players-statelink"></label> players): <label id="players-statelink"></label><br/>
+        }
+        
+        function getNumTrue(itemArray){
+            var result = 0;
+            for (var i=0; i<itemArray.length; i++){
+                if (itemArray[i][2]) result++;
+            }
+            return result;
+        }
+        
+        // index 0: start, index 1: end
+        function setNodeForFreq(index){
+            var value = d3.select("#statenode-id").text();
+            
+            if (index == 0){
+                d3.select("#freq-start-node").node().value = value;
+            }
+            else d3.select("#freq-end-node").node().value = value;
+        }
+        
+        
+        /*************************** Behavior graph *******************/
+        
+        var linearScaleBehaviorNode, distanceBehaviorScale;
+        
+        var getBehaviorNodeText = function(d,i) { 
+                        return i;
+                            
+//                        return "";
+//                        return i+"("+d.overall_affect.toLowerCase()+")";
+            
+        };
+
+        var visualizeBehaviorData = function() {
+            linearScaleBehaviorNode = getBehaviorNodeScale(data.trajectories);
+            distanceBehaviorScale = getBehaviorDistanceScale(data.traj_similarity);
+
+            behaviorforce.nodes(data.trajectories) 
+            .links(data.traj_similarity);
+
+            behaviorlink = behaviorlink.data(data.traj_similarity);
+            behaviornode = behaviornode.data(data.trajectories);
+            
+            behaviorlink.enter().append("line")
+                .attr("class", "behaviorlink")
+                .attr("id", function (d, i) {
+                    return 'behaviorlink' + d.id;
+                });
+
+            
+            var nodeEnter = behaviornode.enter().append("g")
+//                .attr("class", "behaviornode")
+                .attr("class", function(d){
+                    return "behaviornode " + d.overall_affect.toLowerCase();
+                })
+                .attr("id", function (d, i) {
+                    return 'behaviornode' + i;
+                }).on("dblclick", dblclick)
+                .call(behaviordrag);
+            
+            nodeEnter.append("circle")
+                .attr("r", function (d) {
+                    return linearScaleBehaviorNode(d.user_ids.length);
+                });
+//
+//            nodeEnter.append("title").text(function (d) {
+//                return d.user_ids;
+////                return d.id;
+//            });
+            nodeEnter.append("text")
+                .attr("class", function(d){
+                    return d.overall_affect.toLowerCase();
+                })
+                  .attr("dx", function(d){
+                        return linearScaleBehaviorNode(d.user_ids.length) + 3;
+                    })
+                  .attr("dy", ".35em")
+                .attr("font-size", function(d){
+                        return linearScaleBehaviorNode(d.user_ids.length);
+                    })
+                  .text(getBehaviorNodeText);
+            
+            // UPDATE --------------------
+            behaviorlink.attr("id", function (d, i) {
+                return 'behaviorlink' + d.id;
+            })
+            .attr("class", "behaviorlink");
+
+            behaviornode.attr("id", function (d, i) {
+                return 'behaviornode' + i;
+            })
+             //                .attr("class", "behaviornode")
+                .attr("class", function(d){
+                    return "behaviornode " + d.overall_affect.toLowerCase();
+            })
+            .select("circle")
+                .attr("class", function(d){
+                    return d.overall_affect.toLowerCase();
+                })
+                .attr("r", function (d) {
+                    return linearScaleBehaviorNode(d.user_ids.length);
+                });
+
+            behaviornode.select("text")
+                .attr("class", function(d){
+                    return d.overall_affect.toLowerCase();
+                })
+            .attr("dx", function(d){
+                        return linearScaleBehaviorNode(d.user_ids.length) + 3;
+                    })
+                .attr("font-size", function(d){
+                        return linearScaleBehaviorNode(d.user_ids.length);
+                    })
+            .text(getBehaviorNodeText);
+
+
+            behaviorlink.exit().remove();
+            behaviornode.exit().remove();
+
+            behaviorforce.start();
+
+        };
+        
+        
+        function distanceMapping(d){
+            return distanceBehaviorScale(d.similarity);
+        }
+
+
+        function behaviortick() {
+            // link ends
+            behaviorlink.attr("x1", function (d) {
+                return d.source.x;
+            })
+                .attr("y1", function (d) {
+                    return d.source.y;
+                })
+                .attr("x2", function (d) {
+                    return d.target.x;
+                })
+                .attr("y2", function (d) {
+                    return d.target.y;
+                });
+            behaviornode//.each(collide(.5))
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+        }
+        
+        // set minValue and maxValue
+        function getBehaviorNodeScale(dataset) {
+            var minValue = d3.min(dataset, function (d) {
+                return d.user_ids.length;
+            });
+            var maxValue = d3.max(dataset, function (d) {
+                return d.user_ids.length;
+            });
+            // if minValue and maxValue are the same,
+            // we'll make it such that the node takes the big size.
+            if (minValue == maxValue)
+                minValue -= 1;
+            return d3.scale.linear()
+                .domain([minValue, maxValue])
+                .range([minNodeSize, maxNodeSize]);
+        }
+        
+        function getBehaviorDistanceScale(dataset) {
+            var minValue = d3.min(dataset, function (d) {
+                return d.similarity;
+            });
+            var maxValue = d3.max(dataset, function (d) {
+                return d.similarity;
+            });
+
+            return d3.scale.linear()
+                .domain([minValue, maxValue])
+                .range([minDistance, maxDistance]);
+        }
+        
+        var showLinks = true;
+        function toggleShowLinks(){
+            if (showLinks){
+                d3.selectAll(".behaviorlink").style("stroke", "transparent");
+            }
+            else{
+                d3.selectAll(".behaviorlink").style("stroke", null);
+            }
+            
+            showLinks = !showLinks;
+        }
+        
+        // display info in textboxes
+        function displayInfo(d,i){
+            var nodeinfo = i + " (overall affect: " + d.overall_affect.toLowerCase() +")";
+//            if (d.completed) nodeinfo = nodeinfo + "reach end state)";
+//            else nodeinfo = nodeinfo + "does not reach end state)";
+            
+            d3.select("#num-states-in-trajectory").text(d.trajectory.split(",").length);
+            d3.select("#selected-node-index").text(nodeinfo);
+            d3.select("#infobox").text(d.trajectory);
+//            d3.select("#infobox-details").text(d.short_meaning);
+            
+            d3.select("#num-players-sequence").text(d.user_ids.length);
+            if (d.user_ids.length <= userIDLengthLimit)
+                d3.select("#players-sequence").text(d.user_ids);
+            else d3.select("#players-sequence").text(d.user_ids.slice(0,userIDLengthLimit) + ",....");
+        }
+        
+
+        
+        var lowestOpacity = 0.1;
+        
+        function behaviorDragstart(d,i) {
+            d3.event.sourceEvent.stopPropagation();
+//            d3.select(this).classed("fixed", d.fixed = true);
+            
+            // Highlight the behavior
+            clearHighlight();
+            applyOpacity(lowestOpacity);
+            highlightBehaviorNodeIndex(i, "red");
+            
+            archiveStyle(this);
+
+        }
+        
+        var archiveStyle = function(domNode){
+            prevStroke = d3.select(domNode).style("stroke");
+            prevFill = d3.select(domNode).style("fill");
+            prevStrokeOpa = d3.select(domNode).style("stroke-opacity");
+            prevFillOpa = d3.select(domNode).style("fill-opacity");
+            
+            prevTextFill = d3.select(domNode).select("text").style("fill");
+        };
+        
+        var restoreStyle = function(domNode){
+            d3.select(domNode).style("stroke-opacity", prevStrokeOpa)
+                .style("stroke", prevStroke)            
+                .style("fill-opacity", prevFillOpa)
+                .style("fill", prevFill);
+            
+            d3.select(domNode).select("text").style("fill", prevTextFill);
+        };
+        
+        function highlightNodeID(){
+            clearHighlight();
+            // set crowd opacity to 0.2
+            applyOpacity(lowestOpacity);
+            // highlight
+            nArray = d3.select("#playtrace-index").node().value.split(";");
+//            console.log(nArray);
+            for (var i=0; i<nArray.length; i++){
+                
+                // break to smaller IDs to highlight with the same color
+                if (nArray[i].indexOf('_') > -1){
+                    similarColorArray = nArray[i].split('_');
+                    for (var j=0; j<similarColorArray.length; j++)
+                        highlightBehaviorNodeIndex(parseInt(similarColorArray[j]), fill(i));
+                }
+                else
+                    highlightBehaviorNodeIndex(parseInt(nArray[i]), fill(i));
+            }
+        }
+        
+        function showInfoNodeID(){
+            var index = parseInt(d3.select("#playtrace-show-info").node().value);
+            displayInfo(data.trajectories[index], index);
+        }
+        /*************************** Highlighting ******************/
+        
+        
+        function clearHighlight(){
+            // clear all styles for state graph
+            d3.selectAll(".statelink,.statenode").style("stroke-opacity", null)
+            .style("stroke", null)
+            .style("fill", null)
+            .style("fill-opacity", null);
+            
+            
+            d3.selectAll(".statenode").select("text")
+            .style("fill", null)
+            .style("fill-opacity", null);
+            
+            // clear behavior graph
+            d3.selectAll(".behaviornode").style("stroke-opacity", null)
+            .style("stroke", null)
+            .style("fill", null)
+            .style("fill-opacity", null);
+            
+            d3.selectAll(".behaviornode circle").style("fill", null).style("stroke", null);
+            
+            applyOpacity(currentOpacity);
+            
+            displayingFreq = false;
+        }
+        
+        
+        function highlightUserID(){
+        
+            clearHighlight();
+            applyOpacity(lowestOpacity);
+            input = d3.select("#userID").node().value;
+            
+            // 1. find the user traj from the trajectories
+                
+            userIDs = input.split(",");
+
+            _.each(userIDs, function(userID, id){
+                var trajIndex=-1;
+                
+                for(var i=0; i<data.trajectories.length; i++){
+                    if (_.contains(data.trajectories[i].user_ids, userID)){
+//                    if (data.trajectories[i].user_ids.indexOf(userID) != -1){
+                        trajIndex = i;
+                        break;
+                    }                        
+                }
+
+                if (trajIndex >= 0){
+                    // 2 is red
+                    highlightBehaviorNodeIndex(trajIndex, fill(id));
+                }
+                else{
+                    alert('cant find');
+                }
+            });
+        }
+        
+        // flag: 1: young adults, 2: old adults, 0: all
+        var highlightGroup = function(flag){
+            clearHighlight();
+            applyOpacity(lowestOpacity);
+
+            switch(flag){
+                case 1:
+                    highlightGroupWithName('YA', 'blue');
+                    break;
+                case 2:
+                    highlightGroupWithName('OA', 'orange');
+                    break;
+                case 3:
+                    highlightGroupWithName('MA', 'green');
+                    break;
+                default:
+                    highlightGroupWithName('YA', 'blue');
+                    highlightGroupWithName('MA', 'green');
+                    highlightGroupWithName('OA', 'orange');
+            }
+            
+            
+        };
+        
+        var highlightGroupWithName = function(grpName, color){
+
+            _.each(data.trajectories, function(traj, id){
+                if (traj.user_ids.toString().indexOf(grpName) > -1)
+
+                    highlightBehaviorNodeIndex(id, color);
+            });
+        };
+        
+        function highlightBehaviorNodeIndex(index, color){
+            
+            highlightTraj(data.trajectories[index], color);
+            highlightBehaviorNode(index, color);
+            displayInfo(data.trajectories[index], index);
+            
+            displayingFreq = true;
+        }
+        
+        function highlightBehaviorNode(nodeToHighlight, color){
+            d3.select("#behaviornode"+nodeToHighlight).style("stroke-opacity", 1)
+            .style("stroke", color)
+            .style("fill", color)
+            .style("fill-opacity", 1);
+            // somehow have to set fill for cirle only.
+            d3.select("#behaviornode"+nodeToHighlight).select("circle")
+            .style("stroke", color)
+            .style("fill", color);
+        }
+                
+        function toggleKthTrajectories(){
+            clearHighlight();
+            applyOpacity(lowestOpacity);
+            var numHighlight = parseInt(d3.select("#number-highlight").node().value);
+            if (data.hasOwnProperty('trajectories')&& numHighlight <= data.trajectories.length){
+
+                numFrequent = (numHighlight-1 + data.trajectories.length) % data.trajectories.length;
+                
+                highlightBehaviorNodeIndex(numFrequent, fill(numFrequent));
+                
+            }
+            
+        }
+
+        function toggleHighlightFreqTrajectories(){
+            clearHighlight();
+            applyOpacity(lowestOpacity);
+            var numHighlight = parseInt(d3.select("#number-highlight").node().value);
+            if (data.hasOwnProperty('trajectories') && numHighlight <= data.trajectories.length){
+
+                numFrequent = (numHighlight + data.trajectories.length) % data.trajectories.length;
+                
+                for (var i=0; i<numFrequent; i++){
+                    highlightBehaviorNodeIndex(i, fill(i));
+                }
+                
+            }
+            
+        }
+        
+        function highlightTraj(trajString, color){
+            
+            // 1. break the trajectory into nodes and statelinks ID
+            ids = trajToIDs(trajString);
+            
+            // 2. assign the color to a corresponding list of colors.
+            d3.selectAll(ids)
+            .style("stroke", color)
+            .style("stroke-opacity", 1);
+            
+            d3.selectAll(ids).select("text")
+//            .style("fill", color)
+            .style("fill-opacity", 1);
+//            ;
+            
+//            
+//            d3.select("#behaviornode"+nodeToHighlight).style("stroke-opacity", 1)
+//            .style("stroke", color)
+//            .style("fill", color)
+//            .style("fill-opacity", 1);
+//            // somehow have to set fill for cirle only.
+//            d3.select("#behaviornode"+nodeToHighlight).select("circle")
+//            .style("stroke", color)
+//            .style("fill", color);
+        }
+        
+        
+        // return: "#statenode975, #statelink975_0, #statenode1015, #statelink1015_0, #statenode475 "
+        // for "975, 0, 1015, 1015_0, 475"
+        function trajToIDs(traj){
+            
+            pArray = traj.trajectory.split(",");
+            
+            selectArray = "";
+            
+            for(var i=0; i<pArray.length; i++){
+                
+                selectArray += "#statenode" + pArray[i].trim();
+
+                if (i < pArray.length-1){
+                    selectArray += ", ";
+                    selectArray += "#statelink" + pArray[i].trim() + "_" +pArray[i+1].trim() + ", ";
+
+                }
+            }
+            
+            return selectArray;
+        }
+        
+        var currentOpacity = 0.7;
+        
+        function incrementOpacity(){
+            
+            currentOpacity = currentOpacity + 0.1;
+            if (currentOpacity > 1) currentOpacity = 1;
+            applyOpacity(currentOpacity);         
+
+        }
+        
+        function decrementOpacity(){
+            
+            currentOpacity = currentOpacity - 0.1;
+            if (currentOpacity < 0.2) currentOpacity = 0.2;
+                      
+            applyOpacity(currentOpacity);
+        }
+        
+        function applyOpacity(opacityValue){
+            
+            d3.selectAll(".statelink,.statenode,.behaviorlink,.behaviornode")
+            .style("stroke-opacity", opacityValue)
+            .style("fill-opacity", opacityValue);    
+        }
+        
+        function freezeLayout(){
+            // still moving
+            if (behaviorforce.alpha() > 0){
+                stateforce.stop();
+                behaviorforce.stop();
+            }
+            else{
+                stateforce.resume();
+                behaviorforce.resume();                
+            }
+        }
+        
+        var allCurrentlyFixed = false;
+        var fixLayout = function(){
+            allCurrentlyFixed = !allCurrentlyFixed;
+            d3.selectAll(".statenode,.behaviornode")
+                .classed("fixed", function(d){ d.fixed = allCurrentlyFixed;});
+        }
+        
+
+    </script>
+</body>
